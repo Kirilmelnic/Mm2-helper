@@ -1,4 +1,4 @@
--- MM2 Supreme Ultimate Scanner V6 (300 Items Database)
+-- MM2 Supreme Ultimate Scanner V6.1 (Bug Fixed)
 local Database = {
     -- === 1. ANCIENTS & ULTIMATES (25 предметов) ===
     ["evergun"] = {v="4200", r="Ancient"}, ["traveler's axe"] = {v="5200", r="Ancient"}, ["traveler's gun"] = {v="3500", r="Ancient"}, ["harvester"] = {v="3200", r="Ancient"}, ["darkshot"] = {v="3100", r="Ancient"}, ["turkey"] = {v="3100", r="Ancient"}, ["evergreen"] = {v="2500", r="Ancient"}, ["icepiercer"] = {v="1800", r="Ancient"}, ["swirly axe"] = {v="250", r="Ancient"}, ["elderwood scythe"] = {v="90", r="Ancient"}, ["icebreaker"] = {v="80", r="Ancient"}, ["hallowscythe"] = {v="75", r="Ancient"}, ["batwing"] = {v="60", r="Ancient"}, ["logchopper"] = {v="55", r="Ancient"}, ["nik scythe"] = {v="100", r="Ancient"}, ["ice wing"] = {v="1", r="Ancient"}, ["iceflake"] = {v="25", r="Ancient"}, ["candleflame"] = {v="180", r="Ancient"}, ["hallow's edge"] = {v="65", r="Ancient"}, ["swirly gun"] = {v="150", r="Ancient"}, ["swirly blade"] = {v="80", r="Ancient"}, ["elderwood blade"] = {v="120", r="Ancient"}, ["vampire's scythe"] = {v="90", r="Ancient"}, ["reaper ancient"] = {v="110", r="Ancient"}, ["ghost scythe"] = {v="70", r="Ancient"},
@@ -22,10 +22,13 @@ local Database = {
     ["steampunk"] = {v="90", r="Pet"}, ["phoenix"] = {v="80", r="Pet"}, ["sammy"] = {v="65", r="Pet"}, ["traveller"] = {v="60", r="Pet"}, ["ghostly"] = {v="45", r="Pet"}, ["skelly"] = {v="35", r="Pet"}, ["icey"] = {v="30", r="Pet"}, ["frostbird"] = {v="25", r="Pet"}, ["fire fox"] = {v="25", r="Pet"}, ["fire cat"] = {v="25", r="Pet"}, ["fire dog"] = {v="25", r="Pet"}, ["fire bear"] = {v="25", r="Pet"}, ["fire bunny"] = {v="25", r="Pet"}, ["fire bat"] = {v="25", r="Pet"}, ["deathspeaker"] = {v="50", r="Pet"}, ["electro"] = {v="40", r="Pet"}, ["ice phoenix"] = {v="30", r="Pet"}, ["reindeer"] = {v="20", r="Pet"}, ["green pumpkin"] = {v="15", r="Pet"}, ["red pumpkin"] = {v="15", r="Pet"}
 }
 
+-- Безопасный поиск названий (без ломающих регулярных выражений)
 local function isTarget(text)
     local clean = string.lower(text):gsub("%s+", "")
     for name, data in pairs(Database) do
-        if clean:find(name:gsub("%s+", "")) then
+        local cleanName = name:gsub("%s+", "")
+        -- string.find c флагом true ищет как обычный текст, игнорируя спецсимволы
+        if string.find(clean, cleanName, 1, true) then
             return data
         end
     end
@@ -35,8 +38,19 @@ end
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local StarterGui = game:GetService("StarterGui")
 
--- Усиленный сканер интерфейса
+-- Уведомление на экран при запуске
+pcall(function()
+    StarterGui:SetCore("SendNotification", {
+        Title = "MM2 Helper Active!",
+        Text = "Loaded 300 supreme items.",
+        Duration = 5
+    })
+end)
+print("[MM2 Helper] Loaded database successfully!")
+
+-- Усиленный сканер UI
 task.spawn(function()
     while task.wait(1.5) do
         pcall(function()
@@ -44,7 +58,7 @@ task.spawn(function()
                 if obj:IsA("TextLabel") and obj.Visible then
                     local data = isTarget(obj.Text)
                     if data and not string.find(obj.Text, "%[") then
-                        obj.Text = obj.Text .. " [" .. data.value .. "]"
+                        obj.Text = obj.Text .. " [" .. data.v .. "]"
                         obj.TextColor3 = Color3.fromRGB(255, 255, 0) -- Желтая подсветка цен
                     end
                 end
